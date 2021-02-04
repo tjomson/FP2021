@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "fkpD3cYZxQ/LuH9ydMyJKMw7vxDemqS3DrmMXfjiBMhs1NHkEQgBFZSBKA27cPXRBIBSNL5wmqGm3QU5swxZPA==",
+  "success": true,
+  "projectFilePath": "c:\\Users\\Thoma\\Documents\\GitHub\\FP2021\\Assignment1\\Assignment1.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Thoma\\.nuget\\packages\\fsharp.core\\5.0.0\\fsharp.core.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
