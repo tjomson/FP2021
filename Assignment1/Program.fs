@@ -50,7 +50,9 @@ let rec bin = function
     // 3: This will result in a stack overflow, due to fact
 
 // Exercise 1.11
-//TODO
+let curry (a,b) = fun  c ->
+    a 
+
 
 // Assignment 1.12
 let empty (letter: char, pointValue: int) = fun (pos:int) -> 
