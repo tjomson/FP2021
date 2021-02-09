@@ -50,18 +50,47 @@ let rec bin = function
     // 3: This will result in a stack overflow, due to fact
 
 // Exercise 1.11
-let curry (a,b) = fun  c ->
-    a 
+let curry a b c = a (b,c)
 
+let uncurry a (b, c) = a b c
+
+// let plus = fun (a,b) -> a + b
+
+// let test = fun a b -> a + b
+
+// let grr = uncurry test
+
+// let haha = curry (fun (a,b) -> a + b)
+// let haha2 = haha 2
 
 // Assignment 1.12
 let empty (letter: char, pointValue: int) = fun (pos:int) -> 
     (letter, pointValue)
 
+let theLetterA = empty('A', 1)
+
 // Assignment 1.13
-let add (newPos: int) (letter: char, pointValue: int) word = fun (pos:int) ->
+let add (newpos:int) (letter:char, pointValue: int) (word: (int -> char*int)) (pos: int) =
+    match newpos = pos with
+        | true ->  (letter, pointValue) 
+        | false -> word pos
 
+let theLetterAB = add 1 ('B', 3) theLetterA
 
+let theLettersAB = add 1 ('B',3) theLetterA
+
+// Assignment 1.14
+let hello =
+    empty (char 0, 0)
+    |> add 0 ('H', 4)
+    |> add 1 ('E', 1)
+    |> add 2 ('L', 1)
+    |> add 3 ('L', 1)
+    |> add 4 ('O', 1)
+
+// Assignment 1.15
+
+let singleLetterScore =
 
 [<EntryPoint>]
 let main argv =
