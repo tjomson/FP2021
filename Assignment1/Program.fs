@@ -35,6 +35,9 @@ let rec bin = function
     | (n,k) when k = 0 || n = k -> 1
     | (n,k) -> bin(n-1, k-1) + bin(n-1,k)
 
+
+let h = (+) 3 << fun x -> x*x
+
 // Exercise 1.9
     // 1: int * int -> int
     // 2: When x = 0
@@ -42,26 +45,19 @@ let rec bin = function
         // f(2, 3) = f(2 - 1, 2 * 3)
         // f(1, 6) = f(1 - 1, 1 * 6)
         // f(0, 6) = 6
-    // 4: Multiplies x and y as many times as there x is big, with x -1 each time, and y being the product of the previous x and y.
+    // 4: Multiplies x and y as many times as x is big, with x -1 each time, and y being the product of the previous x and y.
 
 // Exercise 1.10
     // 1: (bool, int) -> int
-    // 2: Causes a stack . If it could run, it would be 0 though
-    // 3: This will result in a stack overflow, due to fact
+    // 2: Causes a stack overflow. If it could run, it would be 0 though
+    // 3: 0
 
 // Exercise 1.11
 let curry a b c = a (b,c)
+let curry2 = fun x -> fun y -> fun z -> x(y,z)
 
 let uncurry a (b, c) = a b c
-
-// let plus = fun (a,b) -> a + b
-
-// let test = fun a b -> a + b
-
-// let grr = uncurry test
-
-// let haha = curry (fun (a,b) -> a + b)
-// let haha2 = haha 2
+let uncurry2 = fun a -> fun (b, c) -> a b c
 
 // Assignment 1.12
 let empty (letter: char, pointValue: int) = fun (pos:int) -> 
@@ -90,7 +86,15 @@ let hello =
 
 // Assignment 1.15
 
-let singleLetterScore =
+let singleLetterScore (word: int -> (char * int)) pos: int = 
+    snd(word pos)
+
+let doubleLetterScore (word: int -> (char * int)) pos: int = 
+    snd(word pos) * 2
+
+let trippleLetterScore (word: int -> (char * int)) pos: int = 
+    snd(word pos) * 3
+
 
 [<EntryPoint>]
 let main argv =
