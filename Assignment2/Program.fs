@@ -20,14 +20,17 @@ let removeOddIdx xs =
 
 // Exercise 2.3
 let combinePair = function
-    xs -> [ for i in 0 .. ([]@xs).Length - 1 ->  (xs.[i], xs.[i+1]) ]
+    | (x:List<'a>) when x.Length % 2 = 0 -> [for i in 0 .. 2 .. x.Length - 1 -> (x.[i],x.[i + 1])]
+    | x -> [for i in 0 .. 2 .. x.Length - 2 -> (x.[i],x.[i + 1])]
 
-let combinePair2 = function
-    | 
+// Exercise 2.4
+type complex = float * float
 
+let mkComplex x y = complex(x,y)
+
+let complexToPair (c: complex) = (fst(c), snd(c))
 
 [<EntryPoint>]
 let main argv =
-    let message = from "F#" // Call the function
-    printfn "Hello world %s" message
+    printfn "Hello world"
     0 // return an integer exit code
