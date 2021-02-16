@@ -107,7 +107,26 @@ type word = (char * int) list
 let hello: word = [('H',4); ('E',1); ('L',1); ('L',1); ('O',1)]
 
 // Exercise 2.14
-type square = word -> int -> int -> int
+type squareFun = {w: word; pos: int; acc: int}
+// type squareFun = word -> int -> int -> int
+
+
+let singleLetterScore s =
+    snd(s.w.[s.pos]) + s.acc
+
+let doubleLetterScore s =
+    snd(s.w.[s.pos]) * 2 + s.acc
+
+let tripleLetterScore s =
+    snd(s.w.[s.pos]) * 3 + s.acc
+
+
+// Exercise 2.15
+let doubleWordScore s = 
+    s.acc * 2
+
+let tripleWordScore s = 
+    s.acc * 3
 
 
 
