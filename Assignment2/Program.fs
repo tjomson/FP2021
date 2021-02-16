@@ -24,11 +24,93 @@ let combinePair = function
     | x -> [for i in 0 .. 2 .. x.Length - 2 -> (x.[i],x.[i + 1])]
 
 // Exercise 2.4
-type complex = float * float
+type complex = {fst: float; snd: float}
 
-let mkComplex x y = complex(x,y)
+let mkComplex x y = {fst = x; snd = y}
 
-let complexToPair (c: complex) = (fst(c), snd(c))
+let complexToPair c = (c.fst, c.snd)
+
+// Exercise 2.5
+let (.+.) x y = {fst = x.fst + y.fst; snd = x.snd + y.snd}
+
+let (.*.) x y = {fst = x.fst * y.fst - x.snd * y.snd; snd = x.snd * y.fst + x.fst * y.snd}
+
+// Exercise 2.6
+let negate x = {fst = -x.fst; snd = -x.snd}
+let (.-.) x y = x .+. negate(y)
+
+let invert x = {fst = x.fst / (x.fst**2.0 + x.snd**2.0); snd = -x.snd / (x.fst**2.0 + x.snd**2.0)}
+let (./.) x y = x .*. invert(y)
+
+let c1 = {fst = 2.0; snd = 3.0}
+let c2 = {fst = 4.0; snd = 5.0}
+
+// Exercise 2.7
+let explode1 (s: string) =
+    s.ToCharArray()
+    |> List.ofArray
+
+let explode2 s =
+    let rec concat (s: string) = function
+        | x when s.Length = 0 -> x
+        | x -> s.[s.Length - 1] :: x
+            |> concat (s.Remove(s.Length - 1))
+    concat s [] 
+
+// Exercise 2.8
+let implode (cs: char list) =
+    let folder = fun c s -> (string c) + s
+    List.foldBack folder cs ""
+
+let implodeRev (cs: char list) =
+    let folder = fun s c -> (string c) + s
+    List.fold folder "" cs
+
+// Exercise 2.9
+let toUpper s =
+    s
+    |> explode1 
+    |> List.map(fun x -> Char.ToUpper(x))
+    |> implode
+
+// Exercise 2.10
+let rec ack = function
+    | (m,n) when m = 0 -> n + 1
+    | (m,n) when m > 0 && n = 0 -> ack(m-1, 1)
+    | (m,n) when m > 0 && n > 0 -> ack(m-1, ack(m, n - 1))
+    | _ -> -1
+
+// Exercise 2.11
+let time f =  
+    let start = System.DateTime.Now  
+    let res = f ()  
+    let finish = System.DateTime.Now  
+    (res, finish - start)
+
+let timeArg1 f a =
+    time(fun x -> f a)
+
+// Exercise 2.12
+let rec downto3 f n e =
+    if (n > 0) 
+        then (downto3 f) (n-1) (f n e)
+    else e
+
+let fac n = 
+    downto3 (fun n a -> n * a) n 1
+
+let range g n = 
+    downto3 (fun n a -> g(n)::a) n []
+
+// Exercise 2.13
+type word = (char * int) list
+let hello: word = [('H',4); ('E',1); ('L',1); ('L',1); ('O',1)]
+
+// Exercise 2.14
+type square = word -> int -> int -> int
+
+
+
 
 [<EntryPoint>]
 let main argv =
