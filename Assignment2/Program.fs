@@ -128,6 +128,18 @@ let doubleWordScore s =
 let tripleWordScore s = 
     s.acc * 3
 
+// Exercise 2.16
+let containsNumbers (s: squareFun) =
+    let generateResult (s: squareFun) (b: bool) =
+        if (b)
+            then - s.acc
+        else s.acc
+    s.w
+    |> List.map (fun x -> Char.IsNumber(fst(x)))
+    |> List.contains true
+    |> generateResult s
+
+
 
 
 
