@@ -99,11 +99,11 @@ module aExp
        | While of bExp * stmnt       (* while statement *)
 
     let rec evalStmnt (stm: stmnt) (w: word) (s: Map<string, int>) = 
-        let removeAndAdd (x: string) (v: int) =
-            s.Remove(x).Add(x,v)
+        // let removeAndAdd (x: string) (v: int) =
+        //     s.Remove(x).Add(x,v)
         match stm with
             | Skip -> s
-            | Ass (x, a) -> arithEval a w s |> removeAndAdd x
+            | Ass (x, a) -> arithEval a w s |> (fun (v) -> s.Remove(x).Add(x,v)) 
             | Seq (stm1, stm2) -> evalStmnt stm2 w (evalStmnt stm1 w s)
             | ITE (guard, stm1, stm2) -> 
                 if (boolEval guard w s) then
@@ -112,7 +112,7 @@ module aExp
                     evalStmnt stm2 w s
             | While (guard, stm) -> 
                 if (boolEval guard w s) then
-                    evalStmnt stm w (evalStmnt stm w s)
+                    evalStmnt (While(guard, stm)) w (evalStmnt stm w s)
                 else
                     s
 
@@ -121,8 +121,16 @@ module aExp
 
 
 
+    // Exercise 3.7
+    let stmnt2SquareFun (stm: stmnt) = 
+        
 
-    let stmnt2SquareFun stm = failwith "not imlpemented"
+
+
+
+
+
+
 
     let singleLetterScore : squareFun = stmnt2SquareFun (Ass ("_result_", arithSingleLetterScore))
     let doubleLetterScore : squareFun = stmnt2SquareFun (Ass ("_result_", arithDoubleLetterScore))
