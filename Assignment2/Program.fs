@@ -7,43 +7,51 @@ let downto1 n =
         
 let downto2 = function
     | 0 -> []
-    | n -> [ for i in 2 .. n -> n - i + 2 ]
+    | n -> [ for i in 1 .. n -> n - i + 1 ]
 
 // Exercise 2.2
-let removeOddIdx xs =
-    let rec concat (xs: List<'a>) (ys: List<'a>) n =
-        match n with 
-        | -1 -> ys
-        | n when n % 2 = 0 -> concat xs (xs.[n]::ys) (n - 1)
-        | _ -> concat xs ys (n - 1)
-    concat xs [] (xs.Length - 1)
+// let removeOddIdx xs =
+//     let rec concat (xs: List<'a>) (ys: List<'a>) n =
+//         match n with 
+//         | -1 -> ys
+//         | n when n % 2 = 0 -> concat xs (xs.[n]::ys) (n - 1)
+//         | _ -> concat xs ys (n - 1)
+//     concat xs [] (xs.Length - 1)
+
+let rec removeOddIdx = 
+    function
+    | x::y::z -> x::removeOddIdx(z)
+    | z->z
 
 // Exercise 2.3
-let combinePair = function
-    | (x:List<'a>) when x.Length % 2 = 0 -> [for i in 0 .. 2 .. x.Length - 1 -> (x.[i],x.[i + 1])]
-    | x -> [for i in 0 .. 2 .. x.Length - 2 -> (x.[i],x.[i + 1])]
+// let combinePair = function
+//     | (x:List<'a>) when x.Length % 2 = 0 -> [for i in 0 .. 2 .. x.Length - 1 -> (x.[i],x.[i + 1])]
+//     | x -> [for i in 0 .. 2 .. x.Length - 2 -> (x.[i],x.[i + 1])]
+
+let rec combinePair =
+    function
+    | x::y::z -> (x,y)::combinePair(z)
+    | z -> []
 
 // Exercise 2.4
-type complex = {fst: float; snd: float}
+// type complex = {fst: float; snd: float}
+type complex = float * float
 
-let mkComplex x y = {fst = x; snd = y}
+let mkComplex x y = complex(x,y)
 
-let complexToPair c = (c.fst, c.snd)
+let complexToPair c = (fst(c), snd(c))
 
 // Exercise 2.5
-let (.+.) x y = {fst = x.fst + y.fst; snd = x.snd + y.snd}
+let (|+|) (x: complex) (y: complex) = complex(fst(x) + fst(y), snd(x) + snd(y))
 
-let (.*.) x y = {fst = x.fst * y.fst - x.snd * y.snd; snd = x.snd * y.fst + x.fst * y.snd}
+let (|*|) x y = complex(fst(x) * fst(y) - snd(x) * snd(y), snd(x) * fst(y) + fst(x) * snd(y))
 
 // Exercise 2.6
-let negate x = {fst = -x.fst; snd = -x.snd}
-let (.-.) x y = x .+. negate(y)
+let negate x = complex(-fst(x), -snd(x))
+let (|-|) x y = x |+| negate(y)
 
-let invert x = {fst = x.fst / (x.fst**2.0 + x.snd**2.0); snd = -x.snd / (x.fst**2.0 + x.snd**2.0)}
-let (./.) x y = x .*. invert(y)
-
-let c1 = {fst = 2.0; snd = 3.0}
-let c2 = {fst = 4.0; snd = 5.0}
+let invert x = complex (fst(x) / (fst(x)**2.0 + snd(x)**2.0), -snd(x) / (fst(x)**2.0 + snd(x)**2.0))
+let (|/|) x y = x |*| invert(y)
 
 // Exercise 2.7
 let explode1 (s: string) =
@@ -108,36 +116,34 @@ let hello: word = [('H',4); ('E',1); ('L',1); ('L',1); ('O',1)]
 
 // Exercise 2.14
 type squareFun = {w: word; pos: int; acc: int}
-// type squareFun = word -> int -> int -> int
 
+let singleLetterScore (w:word) (pos:int) (acc:int) =
+    snd(w.[pos]) + acc
 
-let singleLetterScore s =
-    snd(s.w.[s.pos]) + s.acc
+let doubleLetterScore (w:word) (pos:int) (acc:int) =
+    snd(w.[pos]) * 2 + acc
 
-let doubleLetterScore s =
-    snd(s.w.[s.pos]) * 2 + s.acc
-
-let tripleLetterScore s =
-    snd(s.w.[s.pos]) * 3 + s.acc
+let tripleLetterScore (w:word) (pos:int) (acc:int) =
+    snd(w.[pos]) * 3 + acc
 
 
 // Exercise 2.15
-let doubleWordScore s = 
-    s.acc * 2
+let doubleWordScore (w:word) (pos:int) (acc:int) = 
+    acc * 2
 
-let tripleWordScore s = 
-    s.acc * 3
+let tripleWordScore (w:word) (pos:int) (acc:int) = 
+    acc * 3
 
 // Exercise 2.16
-let containsNumbers (s: squareFun) =
-    let generateResult (s: squareFun) (b: bool) =
+let containsNumbers (w:word) (pos:int) (acc:int) =
+    let generateResult (acc: int) (b: bool) =
         if (b)
-            then - s.acc
-        else s.acc
-    s.w
-    |> List.map (fun x -> Char.IsNumber(fst(x)))
+            then - acc
+        else acc
+    w
+    |> List.map (fun x -> (x |> fst |> Char.IsNumber))
     |> List.contains true
-    |> generateResult s
+    |> generateResult acc
 
 
 
