@@ -122,8 +122,8 @@ module aExp
 
 
     // Exercise 3.7
-    let stmnt2SquareFun (stm: stmnt) = 
-        
+    let stmnt2SquareFun (stm: stmnt): squareFun = 
+        fun w pos acc -> (evalStmnt stm w (Map[("_pos_", pos); ("_acc_", acc)])).["_result_"]
 
 
 

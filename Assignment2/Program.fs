@@ -145,10 +145,22 @@ let containsNumbers (w:word) (pos:int) (acc:int) =
     |> List.contains true
     |> generateResult acc
 
+// type squareFun2 = word -> int -> int -> int
+type square = (int * (word -> int -> int -> int)) list
+
+let SLS: square = [(0, singleLetterScore)]
+let DLS: square = [(0, doubleLetterScore)]
+let TLS: square = [(0, tripleLetterScore)]
+
+let DWS: square = SLS @ [(1, doubleWordScore)]
+let TWS: square = SLS @ [(1, tripleWordScore)]
 
 
+let calculatePoint (squares: square list) (w: word) =
+    squares 
+    |> List.mapi (fun i x -> (x.[i] |> fst, snd(x.[i]) w i ))
 
-
+// (x.[i] |> fst, snd(x.[i]) w i )
 [<EntryPoint>]
 let main argv =
     printfn "Hello world"
