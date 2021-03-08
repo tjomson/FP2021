@@ -18,5 +18,6 @@ module MultiSet
     val sum: MultiSet<'a> -> MultiSet<'a> -> MultiSet<'a>
     val subtract: MultiSet<'a> -> MultiSet<'a> -> MultiSet<'a>
     val intersection: MultiSet<'a> -> MultiSet<'a> -> MultiSet<'a>
+    val ToString: unit -> string
 
 
