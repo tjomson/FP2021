@@ -1,6 +1,4 @@
 module MultiSet
-open System
-
     type MultiSet<'a when 'a: comparison> = 
         | S of Map<'a, uint32>
         override this.ToString() = 
@@ -12,15 +10,14 @@ open System
                     |> List.iteri (fun i element ->
                         let key = element |> fst
                         let value = element |> snd
-                        let toAdd = $"({key}, #{value})"
-                        let mutable commaSpace = ", "
+                        let toAdd = sprintf "(%A, #%A)" key (value |> int)
                         strings.[i * 2] <- toAdd
                         if i <> asList.Length - 1 then
                             strings.[i * 2 + 1] <- ", "
                     )
                     Array.fold (fun a b -> a + b) "" strings
                     |> fun a ->
-                        "{" + a + "}"
+                        sprintf "{%s}" a
             
 
     let empty = S Map.empty
@@ -126,7 +123,7 @@ open System
         |> outerJoin k
         |> S
 
-    let subtract ((S(m)): MultiSet<'a>) ((S(k)): MultiSet<'a>) =
+    let subtract ((S(m))) ((S(k))) =
         let keysToRemove = k |> Map.toList 
         let rec updateMap (resultMap: Map<'a, uint32>) (i: int) =
             match i with 
@@ -156,10 +153,3 @@ open System
                         updateMap resultMap (n - 1)
         updateMap Map.empty (keysToCheck.Length - 1)
         |> S
-        
-        
-     
-    [<EntryPoint>]
-    let main argv =
-        printfn "Hello world"
-        0 // return an integer exit code

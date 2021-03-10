@@ -1,5 +1,5 @@
 module MultiSet
-    type MultiSet<'a>
+    type MultiSet<'a when 'a : comparison>
     val empty: MultiSet<'a>
     val isEmpty: MultiSet<'a> -> bool
     val size: MultiSet<'a> -> uint32
@@ -18,6 +18,3 @@ module MultiSet
     val sum: MultiSet<'a> -> MultiSet<'a> -> MultiSet<'a>
     val subtract: MultiSet<'a> -> MultiSet<'a> -> MultiSet<'a>
     val intersection: MultiSet<'a> -> MultiSet<'a> -> MultiSet<'a>
-    val ToString: unit -> string
-
-
