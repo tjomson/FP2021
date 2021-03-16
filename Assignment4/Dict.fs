@@ -1,4 +1,5 @@
 module Dict
+open System.Collections.Generic
     type Dict =
         | D of Set<string>
 
@@ -9,9 +10,20 @@ module Dict
         |> D
 
     let lookup s (D(set)) = 
-        let mutable found = false
-        set |> Set.iter (fun ele -> 
-            if ele = s then
-                found <- true
-        )
-        found
+        set.Contains s
+
+
+    // type Dict =
+    //     | Node of Dictionary<char, (bool * Dict)>
+
+    // let empty () = Node (new Dictionary<char, (bool * Dict)>())
+
+    // let insert (s: string) (Node(d)) =
+    //     Seq.toList s
+    //     |> List.iter (fun c ->
+
+    //     )
+
+
+
+    
