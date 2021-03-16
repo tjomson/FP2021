@@ -137,7 +137,6 @@ let rec arithEvalSimple (a: aExp) (w: word) (s:Map<string,int>) =
     | Sub (a,b) -> arithEvalSimple a w s - arithEvalSimple b w s
     | Mul (a,b) -> arithEvalSimple a w s * arithEvalSimple b w s
     | CharToInt c -> charEvalSimple c w s |> int
-
 and charEvalSimple (c: cExp) (w: word) (s: Map<string,int>) = 
     match c with 
         | C c -> c
@@ -148,8 +147,24 @@ and charEvalSimple (c: cExp) (w: word) (s: Map<string,int>) =
 
 
 
-let arithEvalTail a w s cont = failwith "not implemented"
+let rec arithEvalTail a (w: word) (s: Map<string,int>) (conti: int -> 'a): 'a = 
+    match a with 
+        | N a -> a |> conti 
+        | V a -> (defaultArg (s.TryFind(a)) 0) |> conti
+        | WL -> w.Length |> conti
+        // | PV a -> w.[arithEvalTail a w s] |> snd |> conti
+        | PV a -> arithEvalTail a w s (fun pv -> w.Item(pv) |> snd |> conti)
+        | Add (a,b) -> arithEvalTail a w s (fun res1 -> arithEvalTail b w s (fun res2 -> conti(res1+res2)))
+        | Sub (a,b) -> arithEvalTail a w s (fun res1 -> arithEvalTail b w s (fun res2 -> conti(res1-res2)))
+        | Mul (a,b) -> arithEvalTail a w s (fun res1 -> arithEvalTail b w s (fun res2 -> conti(res1*res2)))
+        | CharToInt c -> charEvalTail c w s (fun c -> int c |> conti)
+and charEvalTail c w s (conti: char -> 'a): 'a = 
+    match c with 
+        | C c -> c |> conti
+        | ToUpper c -> charEvalTail c w s (fun cha -> cha |> System.Char.ToUpper |> conti)
+        | ToLower c -> charEvalTail c w s (fun cha -> cha |> System.Char.ToLower |> conti)
+        | CV c -> arithEvalTail c w s (fun a -> w.Item(a) |> fst |> conti)
+        | IntToChar c -> arithEvalTail c w s (fun i -> i |> char |> conti)
 
-let charEvalTail c w s cont = failwith "not implemented"
-
+let arithEval a w s = arithEvalTail a w s id
 let charEval c w s  = charEvalTail c w s id
