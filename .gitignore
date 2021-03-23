@@ -2,3 +2,7 @@
 obj
 .cache
 Assignment1/obj/Debug/net5.0/Assignment1.fsproj.CoreCompileInputs.cache
+.idea
+bin
+obj
+.vs
