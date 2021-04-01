@@ -87,7 +87,7 @@
 
     // Exercise 6.5
     let update (x : string) (v : int) : SM<unit> = 
-        let rec aux (processed: list<Map<string,int>>) remaining =
+        let rec aux processed remaining =
             match remaining with
                 | []      -> None
                 | m :: ms -> 

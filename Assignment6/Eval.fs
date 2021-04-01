@@ -12,7 +12,20 @@
     let add (a: SM<int>) (b: SM<int>)  = 
         a >>= fun x -> b >>= fun y -> ret (x + y)
 
+    let sub (a: SM<int>) (b: SM<int>)  = 
+        a >>= fun x -> b >>= fun y -> ret (x - y)
 
+    let mul (a: SM<int>) (b: SM<int>)  = 
+        a >>= fun x -> b >>= fun y -> ret (x * y)
+
+    let modulo (a: SM<int>) (b: SM<int>)  = 
+        a >>= fun x -> b >>= fun y -> 
+            if y = 0 then
+                fail DivisionByZero
+            else 
+                ret (x % y)
+   
+    // Assignment 6.8
     let div (a: SM<int>) (b: SM<int>) = 
         a >>= fun x -> b >>= fun y ->
             if y = 0 then
@@ -70,11 +83,39 @@
     let (.>=.) a b = ~~(a .<. b)                (* numeric greater than or equal to *)
     let (.>.) a b = ~~(a .=. b) .&&. (a .>=. b) (* numeric greater than *)    
 
-    let arithEval a : SM<int> = failwith "Not implemented"      
 
-    let charEval c : SM<char> = failwith "Not implemented"      
+    // Assignment 6.9
+    let rec arithEval (a: aExp) : SM<int> = 
+        match a with
+            | N x -> ret x 
+            | V x -> lookup x
+            | WL -> wordLength
+            | PV x -> (arithEval x) >>= fun b -> pointValue b
+            | Add (x, y) -> add (arithEval x) (arithEval y) 
+            | Sub (x, y) -> sub (arithEval x) (arithEval y) 
+            | Mul (x, y) -> mul (arithEval x) (arithEval y) 
+            | Div (x, y) -> div (arithEval x) (arithEval y)
+            | Mod (x, y) -> modulo (arithEval x) (arithEval y)
+            | CharToInt c -> charEval c >>= fun x -> x |> int |> ret
 
-    let boolEval b : SM<bool> = failwith "Not implemented"
+    and charEval c : SM<char> = 
+        match c with 
+            | C x -> ret x
+            | CV x -> x |> arithEval >>= fun v -> v |> characterValue
+            | ToUpper x -> charEval x >>= fun v -> v |> System.Char.ToUpper |> ret
+            | ToLower x -> charEval x >>= fun v -> v |> System.Char.ToLower |> ret
+            | IntToChar a -> arithEval a >>= fun x -> x |> char |> ret
+
+    let rec boolEval b : SM<bool> = 
+        match b with 
+            | TT -> ret true
+            | FF -> ret false
+            | AEq (a, b) -> arithEval a >>= fun x -> arithEval b >>= fun y -> ret (x = y)
+            | ALt (a, b) -> arithEval a >>= fun x -> arithEval b >>= fun y -> ret (x < y)
+            | Not x -> boolEval x >>= fun y -> y |> not |> ret
+            | Conj (a, b) -> boolEval a >>= fun x -> boolEval b >>= fun y -> ret (x && y)
+            | IsLetter c -> charEval c >>= fun x -> x |> System.Char.IsLetter |> ret
+            | IsDigit c -> charEval c >>= fun x -> x |> System.Char.IsDigit |> ret
 
 
     type stm =                (* statements *)
@@ -85,7 +126,15 @@
     | ITE of bExp * stm * stm (* if-then-else statement *)
     | While of bExp * stm     (* while statement *)
 
-    let rec stmntEval stmnt : SM<unit> = failwith "Not implemented"
+    let rec stmntEval (stmnt: stm) : SM<unit> = 
+        match stmnt with
+            | Declare s -> declare s
+            | Ass (s, a) -> arithEval a >>= fun i -> update s i
+            | Skip -> ret ()
+            | Seq (x, y) -> 
+            | ITE (b, x, y) ->
+            | While (b, x) ->
+
 
 (* Part 3 (Optional) *)
 
