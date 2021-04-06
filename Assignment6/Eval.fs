@@ -126,15 +126,23 @@
     | ITE of bExp * stm * stm (* if-then-else statement *)
     | While of bExp * stm     (* while statement *)
 
+    // Assignment 6.10
     let rec stmntEval (stmnt: stm) : SM<unit> = 
         match stmnt with
             | Declare s -> declare s
             | Ass (s, a) -> arithEval a >>= fun i -> update s i
             | Skip -> ret ()
-            | Seq (x, y) -> 
-            | ITE (b, x, y) ->
-            | While (b, x) ->
-
+            | Seq (x, y) -> stmntEval x >>>= stmntEval y
+            | ITE (b, x, y) -> boolEval b >>= fun bool -> 
+                if bool then
+                    push >>>= stmntEval x >>>= pop
+                else 
+                    push >>>= stmntEval y >>>= pop
+            | While (b, x) -> boolEval b >>= fun bool ->
+                if bool then
+                    push >>>= stmntEval x >>>= stmntEval (While(b, x)) >>>= pop
+                else
+                    push >>>= ret () >>>= pop
 
 (* Part 3 (Optional) *)
 
@@ -159,14 +167,23 @@
     type word = (char * int) list
     type squareFun = word -> int -> int -> Result<int, Error>
 
-    let stmntToSquareFun stm = failwith "Not implemented"
-
+    // Assignment 6.12
+    let stmntToSquareFun (stm: stm): squareFun = 
+        fun (w: word) (pos: int) (acc: int) -> 
+            mkState [("_pos_", pos); ("_acc_", acc); ("_result_", 0)] w ["_pos_"; "_acc_"; "_result_"]
+            |> fun s -> evalSM s (stmntEval stm >>>= lookup "_result_")
+        
 
     type coord = int * int
 
     type boardFun = coord -> Result<squareFun option, Error> 
 
-    let stmntToBoardFun stm m = failwith "Not implemented"
+    // Assignment 6.13
+    let stmntToBoardFun (stm: stm) (m: Map<int, squareFun>): boardFun = // failwith "bruh"
+        fun c -> 
+            mkState [("_x_", fst c); ("_y_", snd c); ("_result_", 0)] [] ["_x_"; "_y_"; "_result_"] 
+            |> fun s -> evalSM s (stmntEval stm >>>= lookup "_result_" >>= (fun x -> Map.tryFind x m |> ret))
+        
 
     type board = {
         center        : coord

@@ -56,7 +56,7 @@
     // Exercise 6.3
     let characterValue (pos : int) : SM<char> = 
         S (fun s -> 
-            if (s.word.Length < pos - 1 || pos < 0) then
+            if (s.word.Length <= pos || pos < 0) then
                 Failure (IndexOutOfBounds pos)
             else
                 Success (s.word.[pos] |> fst, s)    
@@ -65,7 +65,7 @@
     // Exercise 6.4
     let pointValue (pos : int) : SM<int> = 
         S (fun s -> 
-            if (s.word.Length < pos - 1 || pos < 0) then
+            if (s.word.Length <= pos || pos < 0) then
                 Failure (IndexOutOfBounds pos)
             else
                 Success (s.word.[pos] |> snd, s)    
