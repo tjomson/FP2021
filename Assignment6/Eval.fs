@@ -179,7 +179,7 @@
     type boardFun = coord -> Result<squareFun option, Error> 
 
     // Assignment 6.13
-    let stmntToBoardFun (stm: stm) (m: Map<int, squareFun>): boardFun = // failwith "bruh"
+    let stmntToBoardFun stm m = // failwith "bruh"
         fun c -> 
             mkState [("_x_", fst c); ("_y_", snd c); ("_result_", 0)] [] ["_x_"; "_y_"; "_result_"] 
             |> fun s -> evalSM s (stmntEval stm >>>= lookup "_result_" >>= (fun x -> Map.tryFind x m |> ret))
@@ -191,5 +191,11 @@
         squares       : boardFun
     }
 
-    let mkBoard c defaultSq boardStmnt ids = failwith "Not implemented"
+    // Assignment 6.14
+    let mkBoard c defaultSq boardStmnt ids = 
+        {
+            center = c;
+            defaultSquare = stmntToSquareFun defaultSq;
+            squares = stmntToBoardFun boardStmnt (ids |> List.map (fun x -> (x |> fst, x |> snd |>stmntToSquareFun)) |> Map.ofList)
+        }
     
