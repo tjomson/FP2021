@@ -84,9 +84,8 @@ type ParseError = {
     error : string
 }
 with override this.ToString() =
-                sprintf "Error parsing %s\n%s%s" 
-                        this.label (TextInputState.getError this.input) (this.error)
-
+                sprintf "Error parsing string\n%s%s" 
+                         (TextInputState.getError this.input) (this.error)
 module ParseError =
     let mkParseError l i err = {label = l; input = i; error = err}
 

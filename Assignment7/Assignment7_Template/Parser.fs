@@ -49,31 +49,87 @@
     // Assignement 7.4
     let parenthesise p = pchar '(' >*>. p .>*> pchar ')'
     let curlyBrackets p = pchar '{' >*>. p .>*> pchar '}'
+    let apostrophise p = pchar ''' >>. p .>> pchar '''
 
-    let pid = pstring "not implemented"
+    // Assignment 7.5
+    let implode cs =
+        let folder = fun c s -> (string c) + s
+        List.foldBack folder cs ""
 
+    let tupleToList (c: char, l:char list) =
+        c :: l
+
+    let punderscore = pchar '_'
+
+    let pid = (pletter <|> punderscore) .>>. (palphanumeric <|> punderscore |> many) |>> tupleToList |>> implode
     
-    let unop _ = failwith "not implemented"
-    let binop _ p1 p2 = p1 .>>. p2 // incorrect (not implemented)
+    // Assignment 7.6
+    let unop a b =
+        a >*>. b  
+    
+    // Assignment 7.7
+    let binop a b c = 
+        b .>*> a .>*>. c
+
 
     let TermParse, tref = createParserForwardedToRef<aExp>()
     let ProdParse, pref = createParserForwardedToRef<aExp>()
     let AtomParse, aref = createParserForwardedToRef<aExp>()
 
+    // Assignment 7.8
     let AddParse = binop (pchar '+') ProdParse TermParse |>> Add <?> "Add"
-    do tref := choice [AddParse; ProdParse]
+
+
+    let SubParse = binop (pchar '-') ProdParse TermParse |>> Sub <?> "Sub"
+
+    do tref := choice [AddParse; SubParse; ProdParse]
 
     let MulParse = binop (pchar '*') AtomParse ProdParse |>> Mul <?> "Mul"
-    do pref := choice [MulParse; AtomParse]
+    
+
+    let DivParse = binop (pchar '/') AtomParse ProdParse |>> Div <?> "Div"
+    
+
+    let ModParse = binop (pchar '%') AtomParse ProdParse |>> Mod <?> "Mod"
+    
+    do pref := choice [MulParse; DivParse; ModParse; AtomParse]
+
+    // let NegParse = unop (pchar '-') AtomParse |>> (fun x -> Mul (N -1, x)) <?> "Neg"
+    
+    let NegParse = pchar '-'  >>. pint32 |>> (fun x -> Mul (N -1, N x))
 
     let NParse   = pint32 |>> N <?> "Int"
+    
+    let VParse = pletter .>>. many1 palphanumeric |>> tupleToList |>> implode |>> V <?> "Variable"
+    
     let ParParse = parenthesise TermParse
-    do aref := choice [NParse; ParParse]
+
+    let PVParse = pPointValue >*>. ParParse |>> PV <?> "PointValue"
+    
+    let CharacterParse, cref = createParserForwardedToRef<cExp>()
+
+    let CTIParse = pCharToInt >*>. parenthesise CharacterParse |>> CharToInt <?> "CharToInt"
+
+    do aref := choice [NegParse; PVParse; NParse; CTIParse; ParParse; VParse]
 
     let AexpParse = TermParse 
 
-    let CexpParse = pstring "not implemented"
+    // Assignment 7.9
+    let CexpParse = CharacterParse
 
+    let CParse = pchar ''' >>. anyChar .>> pchar ''' |>> C
+
+    let CVParse = pCharValue >*>. parenthesise TermParse |>> CV <?> "CharacterValue"
+
+    let TUParse = pToUpper  >*>. parenthesise CharacterParse |>> ToUpper <?> "ToUpper"
+
+    let TLParse = pToLower  >*>. parenthesise CharacterParse |>> ToLower <?> "ToLower"
+
+    let ITCParse = pIntToChar >*>. parenthesise TermParse |>> IntToChar <?> "IntToChar"
+    
+    do cref := choice [TUParse; TLParse; ITCParse; CVParse; CParse]
+
+    // Assignment 7.10
     let BexpParse = pstring "not implemented"
 
     let stmntParse = pstring "not implemented"
