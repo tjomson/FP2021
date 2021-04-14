@@ -79,7 +79,6 @@
     // Assignment 7.8
     let AddParse = binop (pchar '+') ProdParse TermParse |>> Add <?> "Add"
 
-
     let SubParse = binop (pchar '-') ProdParse TermParse |>> Sub <?> "Sub"
 
     do tref := choice [AddParse; SubParse; ProdParse]
@@ -100,7 +99,9 @@
 
     let NParse   = pint32 |>> N <?> "Int"
     
-    let VParse = pletter .>>. many1 palphanumeric |>> tupleToList |>> implode |>> V <?> "Variable"
+    // let VParse = pletter .>>. many1 palphanumeric |>> tupleToList |>> implode |>> V <?> "Variable"
+
+    let VParse = pid |>> V <?> "Variable"
     
     let ParParse = parenthesise TermParse
 
@@ -109,6 +110,7 @@
     let CharacterParse, cref = createParserForwardedToRef<cExp>()
 
     let CTIParse = pCharToInt >*>. parenthesise CharacterParse |>> CharToInt <?> "CharToInt"
+
 
     do aref := choice [NegParse; PVParse; NParse; CTIParse; ParParse; VParse]
 
@@ -130,9 +132,52 @@
     do cref := choice [TUParse; TLParse; ITCParse; CVParse; CParse]
 
     // Assignment 7.10
-    let BexpParse = pstring "not implemented"
+    
+    let AndOrParse, aoref = createParserForwardedToRef<bExp>()
+    let EqualityParse, eref = createParserForwardedToRef<bExp>()
+    let BooleanParse, bref = createParserForwardedToRef<bExp>()
 
-    let stmntParse = pstring "not implemented"
+    let BexpParse = AndOrParse
+
+    let TParse = pTrue |>> (fun _ -> TT) <?> "True"
+    let FParse = pFalse |>> (fun _ -> FF) <?> "False"
+    let ConjParse = EqualityParse .>*> pstring "/\\" .>*>. AndOrParse |>> Conj <?> "Conjunction"
+    let DisParse = EqualityParse .>*> pstring "\\/" .>*>. AndOrParse |>> (fun (x,y) -> Not (Conj(Not x, Not y))) <?> "Disjunction"
+    let NotParse = pchar '~' >*>. BooleanParse |>> Not <?> "Not"
+    let EqualParse = ProdParse .>*> pchar '=' .>*>. TermParse |>> AEq  <?> "Equal"
+    let NotEqualParse = ProdParse .>*> pstring "<>" .>*>. TermParse |>> (fun (x,y) -> Not (AEq (x,y))) <?> "Not"
+    let LessThanParse = ProdParse .>*> pchar '<' .>*>. TermParse |>> ALt  <?> "LessThan"
+    let LessEqualParse = ProdParse .>*> pstring "<=" .>*>. TermParse |>> (fun (x, y) -> Not (Conj(Not (ALt(x, y)), Not (AEq(x, y))))) <?> "LessEqual"
+    let GreaterThanParse = ProdParse .>*> pchar '>' .>*>. TermParse |>> (fun (x, y) -> Conj (Not (AEq (x,y)), Not (ALt (x, y))))  <?> "GreaterThan"
+    let GreaterEqualParse = ProdParse .>*> pstring ">=" .>*>. TermParse |>> (fun (x, y) -> Not (ALt (x, y)))  <?> "GreaterEqual"
+    let IsDigitParse = pIsDigit >*>. CharacterParse |>> IsDigit <?> "IsDigit"
+    let IsLetterParse = pIsLetter >*>. CharacterParse |>> IsLetter <?> "IsLetter"
+    let BParParse = parenthesise AndOrParse 
+
+    do aoref := choice [DisParse; ConjParse; EqualityParse;]
+
+    do eref := choice [EqualParse; NotEqualParse; LessThanParse; LessEqualParse; GreaterThanParse; GreaterEqualParse; BooleanParse;]
+
+    do bref := choice [NotParse; IsDigitParse; IsLetterParse; BParParse; TParse; FParse]
+
+    // Assignment 7.11
+    let stmntParse, sref = createParserForwardedToRef<stm>()
+
+    let DeclareParse = pdeclare >>. spaces1 >>. pid |>> Declare <?> "Declare"
+
+    let AssParse = pid .>*> (pstring ":=") .>*>. TermParse |>> (fun (x, y) -> Ass (x, y)) <?> "Assignment"
+
+    let SkipParse = pstring "Skip" |>> (fun _ -> Skip) <?> "Skip"
+
+    let ITEParse = pif >*>. parenthesise BexpParse .>*> pthen .>*>. curlyBrackets stmntParse .>*> pelse .>*>. curlyBrackets stmntParse |>> (fun ((a, b), c) -> ITE (a, b, c)) <?> "IfThenElse"
+
+    let ITParse = pif >*>. parenthesise BexpParse .>*> pthen .>*>. curlyBrackets stmntParse |>> (fun (a, b) -> ITE (a, b, Skip)) <?> "IfThen"
+
+    let WhileParse = pwhile >*>. parenthesise BexpParse .>*> pdo .>*>. curlyBrackets stmntParse |>> (fun (a, b) -> While (a, b)) <?> "While"
+
+    let SeqParse = stmntParse .>*> pchar ';' .>*>. stmntParse |>> (fun (a, b) -> Seq (a, b)) <?> "Sequence"
+
+    do sref := choice [DeclareParse; SkipParse; AssParse; ITEParse; ITParse; WhileParse; SeqParse;]
 
 (* These five types will move out of this file once you start working on the project *)
     type coord      = int * int
