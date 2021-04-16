@@ -165,37 +165,30 @@
 (* Part 4 *) 
 
     type word = (char * int) list
-    type squareFun = word -> int -> int -> Result<int, Error>
+    type squareFun = word -> int -> int -> int
+
+    let getSuccessInt =
+        function
+        | Success a -> a
+        | Failure a  -> 0
 
     // Assignment 6.12
     let stmntToSquareFun (stm: stm): squareFun = 
         fun (w: word) (pos: int) (acc: int) -> 
             mkState [("_pos_", pos); ("_acc_", acc); ("_result_", 0)] w ["_pos_"; "_acc_"; "_result_"]
-            |> fun s -> evalSM s (stmntEval stm >>>= lookup "_result_")
+            |> fun s -> evalSM s (stmntEval stm >>>= lookup "_result_") |> getSuccessInt
         
 
     type coord = int * int
-
-    type boardFun = coord -> Result<squareFun option, Error> 
 
     // Assignment 6.13
     let stmntToBoardFun stm m =
         fun c -> 
             mkState [("_x_", fst c); ("_y_", snd c); ("_result_", 0)] [] ["_x_"; "_y_"; "_result_"] 
             |> fun s -> evalSM s (stmntEval stm >>>= lookup "_result_" >>= (fun x -> Map.tryFind x m |> ret))
-        
+            |> function 
+                | Success a -> a
+                | Failure a -> None
 
-    type board = {
-        center        : coord
-        defaultSquare : squareFun
-        squares       : boardFun
-    }
 
-    // Assignment 6.14
-    let mkBoard c defaultSq boardStmnt ids = 
-        {
-            center = c;
-            defaultSquare = stmntToSquareFun defaultSq;
-            squares = stmntToBoardFun boardStmnt (ids |> List.map (fun x -> (x |> fst, x |> snd |>stmntToSquareFun)) |> Map.ofList)
-        }
     

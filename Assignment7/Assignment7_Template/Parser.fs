@@ -144,12 +144,18 @@
     let ConjParse = EqualityParse .>*> pstring "/\\" .>*>. AndOrParse |>> Conj <?> "Conjunction"
     let DisParse = EqualityParse .>*> pstring "\\/" .>*>. AndOrParse |>> (fun (x,y) -> Not (Conj(Not x, Not y))) <?> "Disjunction"
     let NotParse = pchar '~' >*>. BooleanParse |>> Not <?> "Not"
-    let EqualParse = ProdParse .>*> pchar '=' .>*>. TermParse |>> AEq  <?> "Equal"
-    let NotEqualParse = ProdParse .>*> pstring "<>" .>*>. TermParse |>> (fun (x,y) -> Not (AEq (x,y))) <?> "Not"
-    let LessThanParse = ProdParse .>*> pchar '<' .>*>. TermParse |>> ALt  <?> "LessThan"
-    let LessEqualParse = ProdParse .>*> pstring "<=" .>*>. TermParse |>> (fun (x, y) -> Not (Conj(Not (ALt(x, y)), Not (AEq(x, y))))) <?> "LessEqual"
-    let GreaterThanParse = ProdParse .>*> pchar '>' .>*>. TermParse |>> (fun (x, y) -> Conj (Not (AEq (x,y)), Not (ALt (x, y))))  <?> "GreaterThan"
-    let GreaterEqualParse = ProdParse .>*> pstring ">=" .>*>. TermParse |>> (fun (x, y) -> Not (ALt (x, y)))  <?> "GreaterEqual"
+    // let EqualParse = ProdParse .>*> pchar '=' .>*>. TermParse |>> AEq  <?> "Equal"
+    let EqualParse = binop (pchar '=') ProdParse TermParse |>> (fun (x,y) -> x .=. y) <?> "Equal"
+    // let NotEqualParse = ProdParse .>*> pstring "<>" .>*>. TermParse |>> (fun (x,y) -> Not (AEq (x,y))) <?> "Not"
+    let NotEqualParse = binop (pstring "<>") ProdParse TermParse |>> (fun (x,y) -> x .<>. y) <?> "NotEqual"
+    // let LessThanParse = ProdParse .>*> pchar '<' .>*>. TermParse |>> ALt  <?> "LessThan"
+    let LessThanParse = binop (pchar '<') ProdParse TermParse |>> (fun (x,y) -> x .<. y) <?> "LessThan"
+    // let LessEqualParse = ProdParse .>*> pstring "<=" .>*>. TermParse |>> (fun (x, y) -> Not (Conj(Not (ALt(x, y)), Not (AEq(x, y))))) <?> "LessEqual"
+    let LessEqualParse = binop (pstring "<=") ProdParse TermParse |>> (fun (x, y) -> x .<=. y) <?> "LessEqual"
+    // let GreaterThanParse = ProdParse .>*> pchar '>' .>*>. TermParse |>> (fun (x, y) -> Conj (Not (AEq (x,y)), Not (ALt (x, y))))  <?> "GreaterThan"
+    let GreaterThanParse = binop (pchar '>') ProdParse TermParse |>> (fun (x, y) -> x .>. y) <?> "GreaterThan"
+    // let GreaterEqualParse = ProdParse .>*> pstring ">=" .>*>. TermParse |>> (fun (x, y) -> Not (ALt (x, y)))  <?> "GreaterEqual"
+    let GreaterEqualParse = binop (pstring ">=") ProdParse TermParse |>> (fun (x,y) -> x .>=. y) <?> "GreaterEqual"
     let IsDigitParse = pIsDigit >*>. CharacterParse |>> IsDigit <?> "IsDigit"
     let IsLetterParse = pIsLetter >*>. CharacterParse |>> IsLetter <?> "IsLetter"
     let BParParse = parenthesise AndOrParse 
@@ -162,6 +168,7 @@
 
     // Assignment 7.11
     let stmntParse, sref = createParserForwardedToRef<stm>()
+    let stateParse, stateref = createParserForwardedToRef<stm>()
 
     let DeclareParse = pdeclare >>. spaces1 >>. pid |>> Declare <?> "Declare"
 
@@ -175,9 +182,12 @@
 
     let WhileParse = pwhile >*>. parenthesise BexpParse .>*> pdo .>*>. curlyBrackets stmntParse |>> (fun (a, b) -> While (a, b)) <?> "While"
 
-    let SeqParse = stmntParse .>*> pchar ';' .>*>. stmntParse |>> (fun (a, b) -> Seq (a, b)) <?> "Sequence"
+    let SeqParse = stateParse .>*> pchar ';' .>*>. stmntParse |>> (fun (a, b) -> Seq (a, b)) <?> "Sequence"
 
-    do sref := choice [DeclareParse; SkipParse; AssParse; ITEParse; ITParse; WhileParse; SeqParse;]
+    do sref := choice [SeqParse; stateParse]
+
+    do stateref := choice [DeclareParse; SkipParse; AssParse; ITEParse; ITParse; WhileParse;]
+    
 
 (* These five types will move out of this file once you start working on the project *)
     type coord      = int * int
@@ -195,9 +205,13 @@
     type word   = (char * int) list
     type square = Map<int, word -> int -> int -> int>
 
-    let parseSquareFun _ = failwith "not implemented"
+    // Assignment 7.12
+    let parseSquareFun (sqp: squareProg): square = 
+        Map.map (fun _ y -> (run stmntParse y) |> getSuccess |> stmntToSquareFun) sqp
 
-    let parseBoardFun _ = failwith "not implemented"
+    // Assignment 7.13
+    let parseBoardFun (s: string) (m: Map<int, 'a>) = 
+        stmntToBoardFun (run stmntParse s |> getSuccess) m
 
     type boardFun = coord -> square option
     type board = {
@@ -206,5 +220,11 @@
         squares       : boardFun
     }
 
-    let parseBoardProg (bp : boardProg) = failwith "not implemented"
-
+    // Assignment 7.14
+    let parseBoardProg (bp : boardProg): board = 
+        let m' = Map.map (fun _ y -> parseSquareFun y) bp.squares
+        {
+            center = bp.center;
+            defaultSquare = m'.[bp.usedSquare]
+            squares = parseBoardFun bp.prog m'
+        }
