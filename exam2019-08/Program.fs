@@ -120,7 +120,128 @@ let gOpt (s: string) =
 
     aux 0 endIndex
 
+// 3.1
+let calculateGoldenRatio i =
+    let rec aux x number1 number2 =
+        if (x = i) then
+            number2 / number1
+        else 
+            aux (x + 1) (number2) (number1 + number2)
+    aux 0 1.0 1.0
 
+// 3.2
+let grSeq1 = calculateGoldenRatio |> Seq.initInfinite |> Seq.cache;;
+
+let grSeq = 
+    (0.0, 1.0)
+    |> Seq.unfold (fun x -> 
+        Some ((fst x + snd x) / snd x , (snd x, (fst x + snd x)))
+    )
+
+// 3.3
+let goldenRectangleSeq x =
+    Seq.map (fun a -> (x * a) * x) grSeq
+
+let goldenTriangleSeq x =
+    Seq.map (fun b -> 
+        let height = x * System.Math.Sqrt (b * b - 0.25)
+        x * height * 0.5 
+    ) grSeq
+
+    
+// 3.4
+let goldenRectangleTriangle x = 
+    let rec aux recSeq triSeq =
+        seq {
+            yield (Seq.head recSeq, Seq.head triSeq)
+            yield! aux (Seq.tail recSeq) (Seq.tail triSeq)
+        }
+    aux (goldenRectangleSeq x) (goldenTriangleSeq x) 
+    
+// 4.1
+module Question4Solution =
+    type Color = 
+    | Red
+    | Green
+    | Blue
+    | Purple
+    | Orange
+    | Yellow
+
+    type Shape = 
+    | Square
+    | Circle
+    | Star
+    | Diamond
+    | Club
+    | Cross
+
+    type tile = Color * Shape
+
+    let stringToColor = Map.ofList [("red", Red); ("green", Green); ("blue", Blue); ("purple", Purple); ("orange", Orange); ("yellow", Yellow);]
+    let stringToShape = Map.ofList [("square", Square); ("circle", Circle); ("star", Star); ("diamond", Diamond); ("club", Club); ("cross", Cross);]
+
+    let mkTile color shape = tile (stringToColor.[color], stringToShape.[shape])
+
+    let tileToString ((color, shape): tile) = (color.ToString().ToLower()) + " " + (shape.ToString().ToLower())
+
+    // 4.2
+    let validTiles (list: tile list) (tile: tile) =
+        List.map (fun x -> 
+            let color = fst x
+            let shape = snd x
+            if (color = (tile |> fst)) then
+                if (shape = (tile |> snd)) then
+                    false
+                else
+                    true
+            else
+                if (shape = (tile |> snd)) then
+                    true
+                else
+                    false
+        ) list
+        |> List.contains false
+        |> not
+
+    // 4.3
+    type coord = Coord of int * int
+    type board = Board of Map<coord, tile>
+    type direction =
+    | Left
+    | Right
+    | Up
+    | Down
+
+    let moveCoord (Coord(x,y)) (dir: direction) =
+        match dir with
+        | Left -> Coord(x - 1, y)
+        | Right -> Coord(x + 1, y)
+        | Up -> Coord(x, y - 1)
+        | Down -> Coord(x, y + 1)
+
+    let collectTiles (Board(map): board) coord (dir: direction) =
+        let rec aux (c: coord) acc =
+            match (Map.tryFind c map) with
+            | Some x -> aux (moveCoord c dir) (x :: acc)
+            | None -> acc
+        aux coord []
+        |> List.rev
+        
+    // 4.4
+    let placeTile (c, t) (Board(map)) =
+        let collectedL = collectTiles (Board(map)) c Left
+        let collectedR = collectTiles (Board(map)) c Right
+        let collectedU = collectTiles (Board(map)) c Up
+        let collectedD = collectTiles (Board(map)) c Down
+        let collectedHori = collectedL @ collectedR
+        let collectedVert = collectedU @ collectedD
+        if (validTiles collectedHori t && validTiles collectedVert t) then
+            Some (Board(Map.add c t map))
+        else
+            None
+
+        
 
 [<EntryPoint>]
 let main argv =
