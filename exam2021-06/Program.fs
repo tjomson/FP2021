@@ -71,9 +71,26 @@ module Exam2021
 
         aux p ms
 
+    let walk2 (p: position) (ms: move list) =
+        List.fold (fun pos move ->
+            step pos move
+        ) p ms
+
 (* Question 1.4 *)
 
-    let path _ = failwith "not implemented"
+    let rec path (P(c,d)) (ms: move list) =
+        match ms with 
+        | [] -> []
+        | x :: xs -> 
+            match x with
+            | Forward _ -> c :: (path (step (P(c,d)) x) xs)
+            | _ -> (path (step (P(c,d)) x) xs)
+            
+
+
+
+
+
 
 (* Question 1.5 *)
 
@@ -105,6 +122,7 @@ module Exam2021
 
         aux
 
+
     let rec bar x =
       match x with 
       | 0 -> 0 
@@ -119,30 +137,43 @@ module Exam2021
     
     Q: What are the types of functions foo, bar, and baz?
 
-    A: <Your answer goes here>
+    A: foo is of type ('a -> 'b) -> ('a -> 'b)
+    bar is of type int -> int
+    baz is of type int -> int
 
 
     Q: What do functions foo and baz do (skip bar)?
        Focus on what they do rather than how they do it.
 
-    A: <Your answer goes here>
+    A: 
+    foo returns a function that checks if a key if present, if it is the value is returned.
+    if it is not, x is added to the mutable map, with x being the key, and 
+    the value being f applied to x.
 
-    The function foo uses a mutable variable.
+    baz takes a number x, and returns the fibonacci number at the x'th position
+
+    The function foo uses a mutable variable
 
     Q: What function does it serve (why is it there)?
 
-    A: <Your answer goes here>
+    A: 
+    The variable acts as a state of all the values added to the map.
 
     Q: What would happen if you removed the mutable keyword from the line
        let mutable m = Map.empty? Would the function foo still work?
        If yes, why; if no, why not?
 
-    A: <Your answer goes here>
+    A: 
+    No, the function would not work, as the variable m is still called elsewhere in the code.
+    if m is removed, then that variable can't be resolved.
 
     Q: What would be appropriate names for functions 
        foo, bar, and baz?
 
-    A: <Your answer goes here>
+    A:
+    foo could be called something like applyMapping.
+    bar could simply be called fib, as it calculates fibonacci numbers.
+    baz could be called something like combine, as its purpose is to apply bar to foo.
     
     *)
         
@@ -157,14 +188,18 @@ module Exam2021
     Q: What function does this keyword serve in general
        (why would you use "and" when writing any program)?
 
-    A: <Your answer goes here>
+    A:
+    This means that the two functions on each side of the "and" are mutually recursive.
+    Meaning that they can call each other
 
 
     Q: What would happen if you removed it from this particular program and
        replaced it with a standard "let"
        (change the line "and baz = foo bar" to "let baz = foo bar")?
 
-    A: <Your answer goes here>
+    A:
+    If you use let, then baz will not have been defined when it is used in bar.
+    Meaning it would not be able to compile
 
     *)
 
@@ -176,24 +211,37 @@ module Exam2021
 
     Q: Why does this happen, and where? 
 
-    A: <Your answer goes here>
+    A:
+    The warning happens because of the when-clause. The check Map.containsKey will in practice
+    always be true, because the tryfind returned Some, but the compiler does not know this.
+    It simply knows that there is a boolean-expression present, so i thinks that a case 
+    for just Some is missing.
 
 
     Q: For these particular three functions will this incomplete pattern match
        ever cause problems for any possible execution of baz? If yes, why;
        if no, why not.
 
-    A: <Your answer goes here>
+    A:
+    No, the check Map.containsKey will always return true, as it is called in the 
+    Some-part of the match on map.tryFind, meaning the key is present.
 
     Q: The function foo has two redundant computations and is hence not as
        efficient as it could be. What are these two computations and why
        are they redundant?
 
-    A: <Your answer goes here>
+    A:
+    The first being the check of Map.containsKey, as explained previously.
+    The second being that the map is never actually used. The aux-function simply
+    returns f applied to the given value, so whenever foo is called, a new map is made,
+    so the Map.tryFind will walways go to the None case.
 
     *)
 
-    let foo2 _ = failwith "not implemented"
+    let foo2 f =
+        let aux x = f x
+
+        aux
 
 (* Question 2.4 *)
 
