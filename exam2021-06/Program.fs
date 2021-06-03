@@ -88,7 +88,7 @@ module Exam2021
             
 
 
-
+// TODO
 
 
 
@@ -259,27 +259,84 @@ module Exam2021
        Why? You do not have to give exact times, just spot which one is
        slower and explain why.
 
-    A: <Your answer goes here>
+    A:
+    barbaz is slower
+    TODO
 
     *)
 (* Question 2.5 *)
 
-    let bazSeq _ = failwith "not implemented"
+    let bazSeq = Seq.initInfinite baz
 
 (* 3: Guess the next sequence element *)
 
 (* Question 3.1 *)
 
-    type element = unit (* Your type goes here in stead of unit *)
+    type element = Element of int list
+
+    // This way i can have each number be an index in the list, and the list can scale
+    // infinitely as long as there is memory enough
 
 (* Question 3.2 *)
 
-    let elToString _ = failwith "not implemented"
-    let elFromString _ = failwith "not implemented"
+    let elToString (Element(lst)) =
+        List.fold (fun acc el ->
+            acc + (el |> string)
+        ) "" lst
+
+
+    let elFromString (s: string) =
+        s.ToCharArray()
+        |> List.ofArray
+        |> List.map (fun x -> int x - int '0')
+        |> Element
 
 (* Question 3.3 *)
 
-    let nextElement _ = failwith "not implemented"
+    let nextElement (Element(lst)) =
+
+        let rec aux acc remain =
+            match remain with
+            | [] -> acc
+            | x :: xs ->
+
+                let rec auxaux count remainder =
+                    match remainder with
+                    | [] -> (count, [])
+                    | y :: ys ->
+                        if (x = y) then
+                            auxaux (count + 1) ys
+                        else
+                            (count, y :: ys)
+
+                let getValues = auxaux 1 xs
+
+                aux (x :: (getValues |> fst) ::acc) (getValues |> snd)
+
+        aux [] lst
+        |> List.rev
+        |> Element
+
+
+        // let rec aux acc remain =
+        //     match remain with
+        //     | [] -> acc
+        //     | x :: xs -> 
+        //         let rec getCount index =
+        //             if (xs.[index] = x) then
+        //                 getCount (index + 1)
+        //             else
+        //                 index
+        //         let rec skip l i =
+        //             if (i = 0) then
+        //                 l
+        //             else
+        //                 skip (List.tail l) (i - 1)
+        //         let index = getCount 0
+        //         let tail = skip xs index
+        //         aux (index :: x :: acc) tail
+
+        // aux [] lst
 
 (* Question 3.4 *)
 
