@@ -71,32 +71,37 @@ module Exam2021
 
         aux p ms
 
-    let walk2 (p: position) (ms: move list) =
+    let walk2 p ms =
         List.fold (fun pos move ->
             step pos move
         ) p ms
 
 (* Question 1.4 *)
 
-    let rec path (P(c,d)) (ms: move list) =
+    let rec path (P(c,d)) ms =
         match ms with 
-        | [] -> []
+        | [] -> c :: []
         | x :: xs -> 
             match x with
             | Forward _ -> c :: (path (step (P(c,d)) x) xs)
             | _ -> (path (step (P(c,d)) x) xs)
-            
-
-
-// TODO
-
 
 
 (* Question 1.5 *)
 
-    let path2 _ = failwith "not implemented"
-
+    let path2 (P(co, di)) ms =
+        let rec aux acc moves (P(c,d)) =
+            match moves with
+            | [] -> co :: acc
+            | x :: xs ->
+                match x with
+                | Forward _ -> aux (c :: acc) xs (step (P(c,d)) x)
+                | _ -> aux acc xs (step (P(c,d)) x)
+        aux [] ms (P(co,di))
+        |> List.rev
+        
 (* Question 1.6 *)
+// TODO
 
 (* Q: Your solution for `path` is not tail recursive. Why? To make a compelling
       argument you should evaluate a function call of the function, similarly to
@@ -339,7 +344,11 @@ module Exam2021
     Q: Why would Seq.initInfinite not be an appropriate choice to
        write a function like elSeq?
 
-    A: <Your answer goes here>
+    A:
+    initInfinite applies an integer to each element in the sequence.
+    This is not very useful in this case, as we do not need to know which index we
+    are currently at, but we would rather want to know what the previous Element was,
+    to calculate the next one.
 
     *)
 
@@ -356,20 +365,46 @@ module Exam2021
 
 (* Question 4.1 *)
 
-    type 'a ring = RemoveThisConstructor of 'a (* replace this entire type with your own *)
+    type 'a ring = Ring of ('a list) * ('a list)
 
 (* Question 4.2 *)
 
-    let length _ = failwith "not implemented"
-    let ringFromList _ = failwith "not implemented"
-    let ringToList _ = failwith "not implemented"
+    let length (Ring(a,b)) = List.length a + List.length b
+
+
+    let ringFromList lst =
+        Ring ([], lst)
+
+
+    let ringToList (Ring(a,b)) =
+        b @ (List.rev a)
 
 (* Question 4.3 *)
 
-    let empty _ = failwith "not implemented"
-    let push _ = failwith "not implemented"
-    let peek _ = failwith "not implemented"
-    let pop _ = failwith "not implemented"
+    let empty = Ring([], [])
+
+    let push x (Ring(a,b)) =
+        Ring (a, x :: b)
+
+
+    let peek (Ring(a, b)) =
+        match b with
+        | x :: xs -> Some x
+        | _ -> 
+            match (List.rev a) with
+            | y :: ys -> Some y
+            | _ -> None
+
+    let pop (Ring(a, b)) =
+        match b with
+        | x :: xs -> Some (Ring(a, xs))
+        | _ ->
+            match (List.rev a) with
+            | y :: ys -> Some (Ring(ys, b))
+            | _ -> None
+
+
+
     let cw _ = failwith "not implemented"
     let ccw _ = failwith "not implemented"
 
