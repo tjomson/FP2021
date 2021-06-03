@@ -101,7 +101,6 @@ module Exam2021
         |> List.rev
         
 (* Question 1.6 *)
-// TODO
 
 (* Q: Your solution for `path` is not tail recursive. Why? To make a compelling
       argument you should evaluate a function call of the function, similarly to
@@ -111,7 +110,13 @@ module Exam2021
       chain must evaluate to the same value
       (```(5 + 4) * 3 --> 9 * 3 --> 27```, for instance).
 
-   A: <Your answer goes here>
+   A: 
+   When it calls itself recursively, it does so by appending a coordinate to another call of itself.
+   This means that a list can first be evaluated at the very end.
+   Essentially we get a long call stack like this
+   c :: path() :: path() :: path() :: ....... :: c :: []
+
+   Only when we get to the base case, are we able to resolve the prior calls.
 *)
 
     let path3 _ = failwith "not implemented"
@@ -132,7 +137,9 @@ module Exam2021
       match x with 
       | 0 -> 0 
       | 1 -> 1
-      | y -> baz (y - 1) + baz (y - 2)
+      | y -> 
+        printfn "nrwioaw"
+        baz (y - 1) + baz (y - 2)
 
     and baz = foo bar
 
@@ -255,7 +262,9 @@ module Exam2021
         match x with 
         | 0 -> 0 
         | 1 -> 1
-        | y -> baz (y - 1) + baz (y - 2)
+        | y -> 
+            printfn "bruh"
+            baz (y - 1) + baz (y - 2)
 
     (*
 
@@ -266,7 +275,9 @@ module Exam2021
 
     A:
     barbaz is slower
-    TODO
+    A lot more iterations have to be done, as barbaz calls baz, which also calls barbaz,
+    instead of only recursing on baz.
+    The original baz, sort of does this, as a call to baz calls bar, which just calls two more instances of baz.
 
     *)
 (* Question 2.5 *)
@@ -403,10 +414,23 @@ module Exam2021
             | y :: ys -> Some (Ring(ys, b))
             | _ -> None
 
+    let cw (Ring(a, b)) =
+        match a with
+        | x :: xs -> Ring(xs, x :: b)
+        | _ -> 
+            match (List.rev b) with 
+            | y :: ys -> Ring ([y], List.rev ys)
+            | _ -> 
+                empty
 
+    let ccw (Ring(a, b)) =
+       match b with
+        | x :: xs -> Ring(x :: a, xs)
+        | _ -> 
+            match (List.rev a) with 
+            | y :: ys -> Ring (List.rev ys, [y])
+            | _ -> empty 
 
-    let cw _ = failwith "not implemented"
-    let ccw _ = failwith "not implemented"
 
 (* Question 4.4 *)
 
@@ -423,7 +447,7 @@ module Exam2021
     let (>>=) m f = bind m f
     let (>>>=) m n = m >>= (fun () -> n)
     let evalSM (SM f) s = f s
-
+    
     let smLength _ = failwith "not implemented"
     let smPush _ = failwith "not implemented"
     let smPop _ = failwith "not implemented"
