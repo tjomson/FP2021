@@ -299,7 +299,6 @@ module Exam2021
             match remain with
             | [] -> acc
             | x :: xs ->
-
                 let rec auxaux count remainder =
                     match remainder with
                     | [] -> (count, [])
@@ -317,31 +316,23 @@ module Exam2021
         |> List.rev
         |> Element
 
-
-        // let rec aux acc remain =
-        //     match remain with
-        //     | [] -> acc
-        //     | x :: xs -> 
-        //         let rec getCount index =
-        //             if (xs.[index] = x) then
-        //                 getCount (index + 1)
-        //             else
-        //                 index
-        //         let rec skip l i =
-        //             if (i = 0) then
-        //                 l
-        //             else
-        //                 skip (List.tail l) (i - 1)
-        //         let index = getCount 0
-        //         let tail = skip xs index
-        //         aux (index :: x :: acc) tail
-
-        // aux [] lst
-
 (* Question 3.4 *)
 
-    let elSeq _ = failwith "not implemented"
-    let elSeq2 _ = failwith "not implemented"
+    let elSeq el = 
+        Seq.unfold (fun acc -> 
+            let ele = nextElement acc
+            Some (ele, ele)
+        ) el
+
+
+    let elSeq2 el =
+        let rec aux prev =
+            seq {
+                let curr = nextElement prev
+                yield curr
+                yield! aux curr
+            }
+        aux el
 
     (*
 
